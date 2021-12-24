@@ -56,7 +56,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static void load_application(void)
+static void load_application(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,8 +94,8 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("Bootloader Starting! Version number: %d.$d\n", BL_Version[0], BL_Version[1]);
-  HAL_GPIO_WrintePin(GPIOB, GPIO_PIN_0, 1); //Turn on Green LED
+  printf("Bootloader Starting! Version number: %d.%d\n", BL_Version[0], BL_Version[1]);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 1); //Turn on Green LED
   HAL_Delay(2000); //2 Second Delay
 
   load_application(); //Fire up the actual application
@@ -246,6 +246,7 @@ static void load_application(void)
 	//Function pointer to the app reset handler via address
 	void (*app_reset_handler)(void) = (void*)(*(volatile uint32_t *)(APP_STACK_START_ADDR + APP_RESET_HANDLER_ADDR_OFFSET));
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 0); //Turn off LED to indicate bootloader is done
+	app_reset_handler(); //Call the reset handler function
 }
 
 /* USER CODE END 4 */
