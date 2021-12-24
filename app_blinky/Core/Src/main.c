@@ -46,7 +46,7 @@
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-const app_version[2] = {MAJOR, MINOR};
+const uint8_t app_version[2] = {MAJOR, MINOR};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
