@@ -39,7 +39,7 @@
 #define MAJOR 0 //Major Version Number
 #define MINOR 1 //Minor Version Number
 
-#define APP_STACK_START_ADDR (0x08000000UL)
+#define APP_STACK_START_ADDR (0x08040000UL)
 #define APP_RESET_HANDLER_ADDR_OFFSET (4UL)
 /* USER CODE END PM */
 
