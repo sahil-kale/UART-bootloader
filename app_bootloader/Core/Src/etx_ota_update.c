@@ -104,7 +104,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
         ETX_OTA_COMMAND_ *cmd = (ETX_OTA_COMMAND_ *)buf; //Cast the data to the command struct
         if(cmd->packet_type == ETX_OTA_PACKET_TYPE_CMD)
         {
-            if(cmd->cmd = ETX_OTA_CMD_ABORT)
+            if(cmd->cmd == ETX_OTA_CMD_ABORT)
             {
                 break;
             }
@@ -112,12 +112,12 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
 
         switch(ota_state) //OTA state machine
         {
-            case ETX_OTA_STATE_IDLE:
+            case ETX_OTA_STATE_IDLE:;
                 printf("ETX_OTA_STATE_IDLE\n");
                 ret = ETX_OTA_EX_OK;
                 break;
 
-            case ETX_OTA_STATE_START:
+            case ETX_OTA_STATE_START:;
                 if(cmd->packet_type == ETX_OTA_PACKET_TYPE_CMD && cmd->cmd == ETX_OTA_CMD_START)
                 {
                     printf("Starting OTA!\n");
@@ -126,7 +126,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
                 }
                 break;
             
-            case ETX_OTA_STATE_HEADER:
+            case ETX_OTA_STATE_HEADER:;
                 ETX_OTA_HEADER_ *header = (ETX_OTA_HEADER_ *)buf; //Cast the data to the header struct
                 if(header->packet_type == ETX_OTA_PACKET_TYPE_HEADER)
                 {
@@ -138,7 +138,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
                 }
                 break;
 
-            case ETX_OTA_STATE_DATA:
+            case ETX_OTA_STATE_DATA:;
                 ETX_OTA_DATA_ *data = (ETX_OTA_DATA_ *)buf; //Cast the data to the data struct
                 uint16_t data_len = data->data_len;
                 HAL_StatusTypeDef ex;
@@ -146,7 +146,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
                 if(data->packet_type == ETX_OTA_PACKET_TYPE_DATA)
                 {
                     ex = write_data_to_flash_app(buf, data_len, (ota_fw_received_size == 0));
-                    if(ex = HAL_OK)
+                    if(ex == HAL_OK)
                     {
                         printf("[%ld/%ld]\r\n", ota_fw_received_size/ETX_OTA_DATA_MAX_SIZE, ota_fw_total_size/ETX_OTA_DATA_MAX_SIZE);
                         if(ota_fw_received_size >= ota_fw_total_size)
@@ -159,7 +159,7 @@ static ETX_OTA_EX_ etx_process_data(uint8_t *buf, uint16_t len)
                 }
                 break;
 
-            case ETX_OTA_STATE_END:
+            case ETX_OTA_STATE_END:;
                 ETX_OTA_COMMAND_ *cmd = (ETX_OTA_COMMAND_ *)buf; //Cast the data to the command struct
                 if(cmd->packet_type == ETX_OTA_PACKET_TYPE_CMD && cmd->cmd == ETX_OTA_CMD_END)
                 {
@@ -270,7 +270,7 @@ static uint16_t etx_receive_chunk(uint8_t *buf, uint16_t max_len)
     
 }
 
-static void etx_ota_send_resp(uint8_t type)
+static void etx_ota_send_response(uint8_t type)
 {
     ETX_OTA_RESP_ rsp =
     {

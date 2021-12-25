@@ -1,6 +1,8 @@
 #ifndef ETX_OTA_UPDATE_H
 #define ETX_OTA_UPDATE_H
 
+#include <stdint.h>
+
 #define ETX_OTA_SOF (0xAA) //Start of Frame packet
 #define ETX_OTA_EOF (0xBB) //End of Frame packet
 #define ETX_OTA_ACK (0x00) //Acknologemenet
