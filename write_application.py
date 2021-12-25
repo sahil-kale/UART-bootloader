@@ -6,6 +6,7 @@
 import serial
 import struct
 import os
+import time
 
 COMPORT = r'COM4'
 BAUD_RATE = 115200
@@ -37,17 +38,18 @@ RESPONSE_NACK_CODE = 0x01
 response_struct_code = '>BBHBIB'
 
 def is_ack_response_received():
-    return True
     RESPONSE_LEN_BYTES = struct.calcsize(response_struct_code)
     response = serialObject.read(RESPONSE_LEN_BYTES)
     sof, pkt_type, len, status, crc, eof = struct.unpack(response_struct_code, response)
 
     #TODO: Add CRC check
     
-    if pkt_type == 0x06:
+    if pkt_type == PACKET_TYPE_RESPONSE:
         print("ACK received")
         if(status == RESPONSE_ACK_CODE):
             return True
+        else:
+            return False
         
 
 def generate_command_packet(cmd_type: int):
@@ -63,8 +65,8 @@ def generate_command_packet(cmd_type: int):
     packet = bytearray()
     packet.append(PACKET_SOF_CODE)
     packet.append(PACKET_TYPE_CMD)
-    packet.append(0x00) # Length
-    packet.append(0x01) # Length part 2
+    packet.append(0x01) # Length
+    packet.append(0x00) # Length part 2
     packet.append(cmd_type)
     append_crc(packet)
     packet.append(PACKET_EOF_CODE)
@@ -94,27 +96,43 @@ def send_ota_header(filepath: str):
     * |_____|________|_____|________|_____|_____|
     *   1B      1B     2B     16B     4B    1B
     """
+    print("Sending OTA header")
     header_packet = bytearray()
     header_packet.append(PACKET_SOF_CODE)
     header_packet.append(PACKET_TYPE_HEADER)
     meta_info = produce_meta_info(filepath)
-    header_packet.append(len(meta_info)) #Append data length
+    meta_info_size = len(meta_info).to_bytes(2, byteorder='little')
+    header_packet.extend(meta_info_size) #Append data length
     header_packet.extend(meta_info)
     append_crc(header_packet)
     header_packet.append(PACKET_EOF_CODE)
+    print(header_packet)
+    serialObject.write(header_packet)
     assert(is_ack_response_received())
 
 def send_ota_data(data_bytes: bytearray):
     print("Sending OTA data")
+    """
+    * OTA Data format
+    *
+    * __________________________________________
+    * |     | Packet |     |        |     |     |
+    * | SOF | Type   | Len |  Data  | CRC | EOF |
+    * |_____|________|_____|________|_____|_____|
+    *   1B      1B     2B    nBytes   4B    1B
+    """
     data_packet = bytearray()
     data_packet.append(PACKET_SOF_CODE)
     data_packet.append(PACKET_TYPE_DATA)
+    
+    chunk_size = len(data).to_bytes(2, byteorder='little')
+    data_packet.extend(chunk_size)
 
-
-    #data_packet.append(0x00) # Length
-    #data_packet.append(0x00) # Length part 2
-        #data_packet.extend(data)
-        #append_crc(data_packet)
+    data_packet.extend(data)
+    append_crc(data_packet)
+    data_packet.append(PACKET_EOF_CODE)
+    serialObject.write(data_packet)
+    assert(is_ack_response_received())
 
 def produce_meta_info(filepath: str) -> bytearray:
     """
@@ -128,7 +146,8 @@ def produce_meta_info(filepath: str) -> bytearray:
     file_size = int(os.stat(filepath).st_size)
     global binary_size
     binary_size = file_size
-    size_info = file_size.to_bytes(4, byteorder='big')
+    print("Binary Size: ", binary_size)
+    size_info = file_size.to_bytes(4, byteorder='little')
     for byte in size_info:
         meta_info.append(byte) #Append the 32 bit size into the meta info
     append_crc(meta_info)
@@ -142,20 +161,21 @@ def append_crc(packet: bytearray):
 
 def init_serial_port():
     global serialObject
-    serialObject = serial.Serial(COMPORT, BAUD_RATE)
+    serialObject = serial.Serial(COMPORT, BAUD_RATE, timeout=10)
     print('Serial port opened: ' + serialObject.name)
 
 if __name__ == '__main__':
     init_serial_port()
     send_ota_start()
+    input("Press Enter to send header...")
     send_ota_header(APP_BINARY_FILEPATH)
     binary_file = open(APP_BINARY_FILEPATH, 'rb')
-    #print(binary_file.read(DEFAULT_BYTE_READ))
+    input("Press Enter to start application uplink...")
     while (file_bytes_pointer < binary_size):
         data = binary_file.read(DEFAULT_BYTE_READ)
         file_bytes_pointer += len(data)
-        print(data)
-        #send_ota_data(data)
+        send_ota_data(data)
+    send_ota_end()
 
 """PICKUP NOTES:
 - Implemented chunking, need to do implement rest of sending packet logic and then we should be good

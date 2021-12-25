@@ -221,7 +221,7 @@ static uint16_t etx_receive_chunk(uint8_t *buf, uint16_t max_len)
             break; //Error receiving data length
         }
 
-        data_len = ((uint16_t)buf[index] << 8) | buf[index+1];
+        data_len = *(uint16_t *)&buf[index];
         index += 2; //Increment the index
 
         for(uint16_t i = 0; i < data_len; i++)
