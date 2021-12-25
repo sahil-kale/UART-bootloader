@@ -7,6 +7,8 @@ import serial
 import struct
 import os
 import time
+import tqdm
+from progress.bar import Bar
 
 COMPORT = r'COM4'
 BAUD_RATE = 115200
@@ -45,11 +47,14 @@ def is_ack_response_received():
     #TODO: Add CRC check
     
     if pkt_type == PACKET_TYPE_RESPONSE:
-        print("ACK received")
         if(status == RESPONSE_ACK_CODE):
             return True
         else:
+            print("NACK received")
             return False
+    else:
+        print("Invalid packet type received")
+        return False
         
 
 def generate_command_packet(cmd_type: int):
@@ -73,14 +78,14 @@ def generate_command_packet(cmd_type: int):
     return packet
 
 def send_ota_start():
-    print("Sending OTA start command")
+    #print("Sending OTA start command")
     CMD_TYPE_START = 0x00
     cmd_packet = generate_command_packet(CMD_TYPE_START)
     serialObject.write(cmd_packet)
     assert(is_ack_response_received())
 
 def send_ota_end():
-    print("Sending OTA end command")
+    #print("Sending OTA end command")
     CMD_TYPE_END = 0x01
     cmd_packet = generate_command_packet(CMD_TYPE_END)
     serialObject.write(cmd_packet)
@@ -96,7 +101,7 @@ def send_ota_header(filepath: str):
     * |_____|________|_____|________|_____|_____|
     *   1B      1B     2B     16B     4B    1B
     """
-    print("Sending OTA header")
+    #print("Sending OTA header")
     header_packet = bytearray()
     header_packet.append(PACKET_SOF_CODE)
     header_packet.append(PACKET_TYPE_HEADER)
@@ -106,12 +111,12 @@ def send_ota_header(filepath: str):
     header_packet.extend(meta_info)
     append_crc(header_packet)
     header_packet.append(PACKET_EOF_CODE)
-    print(header_packet)
+    #print(header_packet)
     serialObject.write(header_packet)
     assert(is_ack_response_received())
 
 def send_ota_data(data_bytes: bytearray):
-    print("Sending OTA data")
+    #print("Sending OTA data")
     """
     * OTA Data format
     *
@@ -167,15 +172,16 @@ def init_serial_port():
 if __name__ == '__main__':
     init_serial_port()
     send_ota_start()
-    input("Press Enter to send header...")
     send_ota_header(APP_BINARY_FILEPATH)
     binary_file = open(APP_BINARY_FILEPATH, 'rb')
-    input("Press Enter to start application uplink...")
-    while (file_bytes_pointer < binary_size):
-        data = binary_file.read(DEFAULT_BYTE_READ)
-        file_bytes_pointer += len(data)
-        send_ota_data(data)
-    send_ota_end()
+    print("Flashing binary. Please ensure wires are not disturbed properly")
+    with Bar('Flashing binary', max=binary_size) as bar:
+        while (file_bytes_pointer < binary_size):
+            data = binary_file.read(DEFAULT_BYTE_READ)
+            file_bytes_pointer += len(data)
+            send_ota_data(data)
+            bar.next(len(data))
+        send_ota_end()
 
 """PICKUP NOTES:
 - Implemented chunking, need to do implement rest of sending packet logic and then we should be good
