@@ -193,6 +193,7 @@ static uint16_t etx_receive_chunk(uint8_t *buf, uint16_t max_len)
         ret = HAL_UART_Receive(&huart2, &buf[index], 1, HAL_MAX_DELAY); 
         if(ret != HAL_OK)
         {
+        	printf("OTA Timeout!\n");
             break;
         }
 
