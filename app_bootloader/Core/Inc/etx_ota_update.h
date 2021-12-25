@@ -10,16 +10,16 @@
 #define APP_STACK_START_ADDR (0x08040000UL)
 #define APP_RESET_HANDLER_ADDR_OFFSET (4UL)
 
-#define ETX_OTA_DATA_MAX_SIZE (1024) //Max Data Size
+#define ETX_OTA_DATA_MAX_SIZE (1024) //Max Data Size in bytes
 #define ETX_OTA_DATA_OVERHEAD (9) //Data overhead packet
-#define ETX_OTA_PACKET_MAX_SIZE (ETX_OTA_DATA_MAX_SIZE + ETC_OTA_DATA_OVERHEAD)
+#define ETX_OTA_PACKET_MAX_SIZE (ETX_OTA_DATA_MAX_SIZE + ETX_OTA_DATA_OVERHEAD)
 
 //Exception codes
 typedef enum
 {
 	ETX_OTA_EX_OK = 0, //Success
 	ETX_OTA_EX_ERR = 1, //Failure
-}; ETX_OTA_EX_;
+} ETX_OTA_EX_;
 
 /*
  * OTA process state
@@ -139,4 +139,12 @@ typedef struct
   uint32_t  crc;
   uint8_t   eof;
 }__attribute__((packed)) ETX_OTA_RESP_;
+
+/**
+ * @brief Initialize the OTA process by downloading and flashing
+ * @returns ETX_OTA_EX_OK if success, ETX_OTA_EX_ERR otherwise
+ */
+ETX_OTA_EX_ etx_ota_download_and_flash(void);
+
+#endif /* INC_ETX_OTA_UPDATE_H_ */
 

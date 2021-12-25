@@ -54,3 +54,5 @@ app_blinky/.cproject
 app_blinky/.mxproject
 app_blinky/.project
 *.launch
+.vscode/settings.json
+.vscode/c_cpp_properties.json
