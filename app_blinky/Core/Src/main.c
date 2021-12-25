@@ -33,7 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define MAJOR 0 //Major Version Number
-#define MINOR 1 //Minor Version Number
+#define MINOR 2 //Minor Version Number
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -101,7 +101,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-	  HAL_Delay(100);
+	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

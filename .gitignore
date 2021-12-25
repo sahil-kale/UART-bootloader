@@ -53,3 +53,4 @@ dkms.conf
 app_blinky/.cproject
 app_blinky/.mxproject
 app_blinky/.project
+*.launch
